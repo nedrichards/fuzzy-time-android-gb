@@ -1,0 +1,13 @@
+<resources>
+    <string name="watch_face_name">Fuzzy Time GB</string>
+    <string name="text_shade_label">Text shade</string>
+    <string name="shade_warm_white_label">Warm white</string>
+    <string name="shade_cool_white_label">Cool white</string>
+    <string name="shade_soft_green_label">Soft green</string>
+    <string name="shade_dim_amber_label">Dim amber</string>
+    <string name="font_style_label">Font style</string>
+    <string name="font_system_label">System</string>
+    <string name="font_serif_label">Serif</string>
+    <string name="font_mono_label">Mono</string>
+    <string name="range_complication_label">Range indicator</string>
+</resources>

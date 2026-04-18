@@ -1,0 +1,9 @@
+.gradle/
+.gradle-local/
+.idea/
+.codex
+__pycache__/
+*.pyc
+build/
+*/build/
+local.properties

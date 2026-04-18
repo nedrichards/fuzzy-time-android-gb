@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-feature android:name="android.hardware.type.watch" />
+
+    <application
+        android:hasCode="false"
+        android:label="@string/watch_face_name"
+        tools:ignore="MissingApplicationIcon">
+
+        <meta-data
+            android:name="com.google.android.wearable.standalone"
+            android:value="true" />
+
+        <property
+            android:name="com.google.wear.watchface.format.version"
+            android:value="1" />
+
+        <property
+            android:name="com.google.wear.watchface.format.publisher"
+            android:value="codex-android-cli" />
+    </application>
+</manifest>
