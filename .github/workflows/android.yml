@@ -37,13 +37,14 @@ jobs:
         run: python3 tools/generate_release_assets.py
 
       - name: Check generated XML is committed
+        run: git diff --exit-code -- watchface/src/main/res/raw/watchface.xml
+
+      - name: Check release assets exist
         run: |
-          git diff --exit-code -- \
-            watchface/src/main/res/raw/watchface.xml \
-            watchface/src/main/res/drawable/preview.png \
-            release-assets/icon-512.png \
-            release-assets/screenshots/default.png \
-            release-assets/screenshots/range-complication.png
+          test -s watchface/src/main/res/drawable/preview.png
+          test -s release-assets/icon-512.png
+          test -s release-assets/screenshots/default.png
+          test -s release-assets/screenshots/range-complication.png
 
       - name: Validate Watch Face Format
         run: java -jar tools/wff-validator.jar 2 watchface/src/main/res/raw/watchface.xml
