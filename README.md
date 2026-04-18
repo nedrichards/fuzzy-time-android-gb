@@ -36,5 +36,5 @@ python3 tools/generate_watchface.py
 ## Validate WFF
 
 ```sh
-java -jar ../fuzzy-time-android-gb-poc/wff-validator.jar 2 watchface/src/main/res/raw/watchface.xml
+java -jar tools/wff-validator.jar 2 watchface/src/main/res/raw/watchface.xml
 ```

@@ -1,0 +1,41 @@
+name: Android
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    name: Validate and build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Regenerate watch face XML
+        run: python3 tools/generate_watchface.py
+
+      - name: Check generated XML is committed
+        run: git diff --exit-code -- watchface/src/main/res/raw/watchface.xml
+
+      - name: Validate Watch Face Format
+        run: java -jar tools/wff-validator.jar 2 watchface/src/main/res/raw/watchface.xml
+
+      - name: Build debug APK
+        run: ./gradlew :watchface:assembleDebug
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzzy-time-gb-debug-apk
+          path: watchface/build/outputs/apk/debug/watchface-debug.apk
