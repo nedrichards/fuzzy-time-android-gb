@@ -19,14 +19,31 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+
+      - name: Install asset generation dependencies
+        run: python3 -m pip install Pillow
 
       - name: Regenerate watch face XML
         run: python3 tools/generate_watchface.py
 
+      - name: Regenerate release assets
+        run: python3 tools/generate_release_assets.py
+
       - name: Check generated XML is committed
-        run: git diff --exit-code -- watchface/src/main/res/raw/watchface.xml
+        run: |
+          git diff --exit-code -- \
+            watchface/src/main/res/raw/watchface.xml \
+            watchface/src/main/res/drawable/preview.png \
+            release-assets/icon-512.png \
+            release-assets/screenshots/default.png \
+            release-assets/screenshots/range-complication.png
 
       - name: Validate Watch Face Format
         run: java -jar tools/wff-validator.jar 2 watchface/src/main/res/raw/watchface.xml

@@ -33,6 +33,12 @@ env JAVA_HOME=/var/home/nedr/.jdks/jbr-17.0.14 \
 python3 tools/generate_watchface.py
 ```
 
+## Regenerate Release Assets
+
+```sh
+python3 tools/generate_release_assets.py
+```
+
 ## Validate WFF
 
 ```sh
