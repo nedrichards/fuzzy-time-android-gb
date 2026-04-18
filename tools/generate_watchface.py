@@ -4,7 +4,7 @@ from pathlib import Path
 
 OUT = Path("watchface/src/main/res/raw/watchface.xml")
 INTERACTIVE_COLOR = "[CONFIGURATION.textShade]"
-AMBIENT_COLOR = "#FF777777"
+AMBIENT_COLOR = "#FF9A9A9A"
 FONT_OPTIONS = [
     ("system", "SYNC_TO_DEVICE"),
     ("serif", "liberation_serif_regular"),
