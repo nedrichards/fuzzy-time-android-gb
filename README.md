@@ -10,6 +10,8 @@ is not packaged into the watch face APK.
 The optional Serif and Mono styles bundle Liberation Fonts, licensed under the
 SIL Open Font License 1.1. See `licenses/LiberationFonts-OFL-1.1.txt`.
 
+![The watchface, showing the current time and a range complication](release-assets/screenshots/default.png "Watchface screenshot")
+
 ## Build
 
 ```sh
