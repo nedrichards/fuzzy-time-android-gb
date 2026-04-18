@@ -1,7 +1,7 @@
 # Fuzzy Time GB
 
 A minimal word-based Watch Face Format face for Wear OS. It displays fuzzy
-British English time phrases based on the original `fuzzy-time-gb` C logic.
+British English time phrases based on the C logic from the Pebble watchface [fuzzy-time-gb](https://github.com/nedrichards/fuzzy-time-gb).
 
 The Android app module is resource-only: `android:hasCode="false"` and WFF
 version 2. The helper script in `tools/` regenerates the declarative XML, but it
