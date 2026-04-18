@@ -13,11 +13,11 @@ TEXT = "#F2F2EA"
 TRACK = "#33332F"
 GREEN = "#CFE8D6"
 BLACK = "#000000"
-FONT_REGULAR = "/usr/share/fonts/google-noto-vf/NotoSans[wght].ttf"
-FONT_BOLD = "/usr/share/fonts/liberation-sans-fonts/LiberationSans-Bold.ttf"
+FONT_REGULAR = ROOT / "release-assets/fonts/liberation_sans_regular.ttf"
+FONT_BOLD = ROOT / "release-assets/fonts/liberation_sans_bold.ttf"
 
 
-def font(path: str, size: int) -> ImageFont.FreeTypeFont:
+def font(path: Path, size: int) -> ImageFont.FreeTypeFont:
     return ImageFont.truetype(path, size=size)
 
 
