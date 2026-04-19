@@ -7,24 +7,30 @@ The Android app module is resource-only: `android:hasCode="false"` and WFF
 version 2. The helper script in `tools/` regenerates the declarative XML, but it
 is not packaged into the watch face APK.
 
-The optional Serif and Mono styles bundle Liberation Fonts, licensed under the
-SIL Open Font License 1.1. See `licenses/LiberationFonts-OFL-1.1.txt`.
+The optional Arvo style bundles the Arvo typeface, licensed under the SIL Open
+Font License 1.1. See `licenses/Arvo-OFL.txt`. Release asset generation also
+vendors Liberation Sans under the same license; see
+`licenses/LiberationFonts-OFL-1.1.txt`.
 
 ![The watchface, showing the current time and a range complication](release-assets/screenshots/default.png "Watchface screenshot")
 
 ## Build
 
+The project uses Gradle 9, Android Gradle Plugin 9, and Watch Face Format v2.
+Gradle is configured to run the build daemon with a JetBrains JDK 21 toolchain
+from `gradle/gradle-daemon-jvm.properties`; if a matching JDK is not available
+locally, Gradle can provision one via the Foojay resolver configured in
+`settings.gradle.kts`.
+
 ```sh
 ./gradlew :watchface:assembleDebug
 ```
 
-On this machine the build currently needs JDK 17 rather than the default Java
-25 runtime:
+On local machines that do not have `ANDROID_HOME` configured globally, point the
+wrapper at your Android SDK:
 
 ```sh
-env JAVA_HOME=/var/home/nedr/.jdks/jbr-17.0.14 \
-  PATH=/var/home/nedr/.jdks/jbr-17.0.14/bin:$PATH \
-  ANDROID_HOME=/var/home/nedr/Android/Sdk \
+env ANDROID_HOME=/var/home/nedr/Android/Sdk \
   ANDROID_SDK_ROOT=/var/home/nedr/Android/Sdk \
   ./gradlew :watchface:assembleDebug
 ```
