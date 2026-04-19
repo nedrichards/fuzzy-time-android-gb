@@ -7,8 +7,7 @@ INTERACTIVE_COLOR = "[CONFIGURATION.textShade]"
 AMBIENT_COLOR = "#FF9A9A9A"
 FONT_OPTIONS = [
     ("system", "SYNC_TO_DEVICE"),
-    ("serif", "liberation_serif_regular"),
-    ("mono", "liberation_mono_regular"),
+    ("arvo", "arvo_regular"),
 ]
 
 
@@ -82,7 +81,7 @@ HOURS = {
     9: "Nine",
     10: "Ten",
     11: "Eleven",
-    12: "Noon",
+    12: "Twelve",
     13: "One",
     14: "Two",
     15: "Three",
@@ -120,7 +119,7 @@ def fuzzy_lines(hour: int, minute: int) -> list[str]:
             prefix = "Quarter To"
             target_hour = (fuzzy_hour + 1) % 24
         elif fuzzy_minute == 30:
-            prefix = "Half Past"
+            prefix = "Half"
         elif fuzzy_minute < 30:
             prefix = f"{number_words(fuzzy_minute)} Past"
         else:
@@ -128,6 +127,8 @@ def fuzzy_lines(hour: int, minute: int) -> list[str]:
             target_hour = (fuzzy_hour + 1) % 24
 
     hour_words = HOURS[target_hour]
+    if fuzzy_minute == 0 and target_hour == 12:
+        return ["Noon"]
     if fuzzy_minute == 0 and target_hour not in (0, 12):
         return [hour_words, "O'Clock"]
     if prefix:
@@ -216,8 +217,7 @@ def main() -> None:
         '        </ColorConfiguration>',
         '        <ListConfiguration id="fontStyle" displayName="font_style_label" screenReaderText="font_style_label" defaultValue="system">',
         '            <ListOption id="system" displayName="font_system_label" screenReaderText="font_system_label" />',
-        '            <ListOption id="serif" displayName="font_serif_label" screenReaderText="font_serif_label" />',
-        '            <ListOption id="mono" displayName="font_mono_label" screenReaderText="font_mono_label" />',
+        '            <ListOption id="arvo" displayName="font_arvo_label" screenReaderText="font_arvo_label" />',
         '        </ListConfiguration>',
         '    </UserConfigurations>',
         '',
