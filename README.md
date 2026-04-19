@@ -52,3 +52,6 @@ python3 tools/generate_release_assets.py
 ```sh
 java -jar tools/wff-validator.jar 2 watchface/src/main/res/raw/watchface.xml
 ```
+
+---
+*Co-authored with a bunch of different AIs*
