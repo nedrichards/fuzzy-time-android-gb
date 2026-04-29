@@ -8,5 +8,6 @@
     <string name="font_style_label">Font style</string>
     <string name="font_system_label">System</string>
     <string name="font_arvo_label">Arvo</string>
-    <string name="range_complication_label">Range indicator</string>
+    <string name="top_range_complication_label">Top range indicator</string>
+    <string name="bottom_range_complication_label">Bottom range indicator</string>
 </resources>

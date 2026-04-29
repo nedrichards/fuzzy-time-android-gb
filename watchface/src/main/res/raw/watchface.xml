@@ -17,7 +17,7 @@
     </UserConfigurations>
 
     <Scene backgroundColor="#FF000000">
-        <ComplicationSlot slotId="0" displayName="range_complication_label" supportedTypes="RANGED_VALUE GOAL_PROGRESS WEIGHTED_ELEMENTS EMPTY" x="0" y="0" width="450" height="450">
+        <ComplicationSlot slotId="0" displayName="top_range_complication_label" supportedTypes="RANGED_VALUE GOAL_PROGRESS WEIGHTED_ELEMENTS EMPTY" x="0" y="0" width="450" height="450">
             <Variant mode="AMBIENT" target="alpha" value="0" />
             <BoundingArc centerX="225" centerY="225" width="430" height="430" thickness="8" startAngle="-70" endAngle="70" isRoundEdge="TRUE" outlinePadding="8" />
             <Complication type="RANGED_VALUE">
@@ -48,6 +48,43 @@
                         <Stroke color="[COMPLICATION.WEIGHTED_ELEMENTS_BACKGROUND_COLOR]" thickness="4" cap="ROUND" />
                     </Arc>
                     <Arc centerX="225" centerY="225" width="430" height="430" startAngle="-70" endAngle="70">
+                        <WeightedStroke colors="[COMPLICATION.WEIGHTED_ELEMENTS_COLORS]" weights="[COMPLICATION.WEIGHTED_ELEMENTS_WEIGHTS]" thickness="5" discreteGap="2" interpolate="FALSE" cap="BUTT" />
+                    </Arc>
+                </PartDraw>
+            </Complication>
+            <Complication type="EMPTY" />
+        </ComplicationSlot>
+        <ComplicationSlot slotId="1" displayName="bottom_range_complication_label" supportedTypes="RANGED_VALUE GOAL_PROGRESS WEIGHTED_ELEMENTS EMPTY" x="0" y="0" width="450" height="450">
+            <Variant mode="AMBIENT" target="alpha" value="0" />
+            <BoundingArc centerX="225" centerY="225" width="430" height="430" thickness="8" startAngle="110" endAngle="250" isRoundEdge="TRUE" outlinePadding="8" />
+            <Complication type="RANGED_VALUE">
+                <PartDraw x="0" y="0" width="450" height="450">
+                    <Arc centerX="225" centerY="225" width="430" height="430" startAngle="110" endAngle="250">
+                        <Stroke color="#22F2F2EA" thickness="4" cap="ROUND" />
+                    </Arc>
+                    <Arc centerX="225" centerY="225" width="430" height="430" startAngle="110" endAngle="110">
+                        <Transform target="endAngle" value="110 + (([COMPLICATION.RANGED_VALUE_VALUE] - [COMPLICATION.RANGED_VALUE_MIN]) / ([COMPLICATION.RANGED_VALUE_MAX] - [COMPLICATION.RANGED_VALUE_MIN]) * 140)" />
+                        <Stroke color="[CONFIGURATION.textShade]" thickness="5" cap="ROUND" />
+                    </Arc>
+                </PartDraw>
+            </Complication>
+            <Complication type="GOAL_PROGRESS">
+                <PartDraw x="0" y="0" width="450" height="450">
+                    <Arc centerX="225" centerY="225" width="430" height="430" startAngle="110" endAngle="250">
+                        <Stroke color="#22F2F2EA" thickness="4" cap="ROUND" />
+                    </Arc>
+                    <Arc centerX="225" centerY="225" width="430" height="430" startAngle="110" endAngle="110">
+                        <Transform target="endAngle" value="110 + min(([COMPLICATION.GOAL_PROGRESS_VALUE] / [COMPLICATION.GOAL_PROGRESS_TARGET_VALUE]) * 140, 140)" />
+                        <Stroke color="[CONFIGURATION.textShade]" thickness="5" cap="ROUND" />
+                    </Arc>
+                </PartDraw>
+            </Complication>
+            <Complication type="WEIGHTED_ELEMENTS">
+                <PartDraw x="0" y="0" width="450" height="450">
+                    <Arc centerX="225" centerY="225" width="430" height="430" startAngle="110" endAngle="250">
+                        <Stroke color="[COMPLICATION.WEIGHTED_ELEMENTS_BACKGROUND_COLOR]" thickness="4" cap="ROUND" />
+                    </Arc>
+                    <Arc centerX="225" centerY="225" width="430" height="430" startAngle="110" endAngle="250">
                         <WeightedStroke colors="[COMPLICATION.WEIGHTED_ELEMENTS_COLORS]" weights="[COMPLICATION.WEIGHTED_ELEMENTS_WEIGHTS]" thickness="5" discreteGap="2" interpolate="FALSE" cap="BUTT" />
                     </Arc>
                 </PartDraw>
