@@ -2,30 +2,38 @@ name: Android
 
 on:
   push:
+    branches: [main]
+    tags: ['v*']
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   validate:
     name: Validate and build
     runs-on: ubuntu-latest
 
+    timeout-minutes: 30
+
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: temurin
           java-version: "21"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.12"
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@07d1f8453baaff67fb503883367f8b13e6158a54 # v6
 
       - name: Install asset generation dependencies
         run: python3 -m pip install Pillow
@@ -49,11 +57,71 @@ jobs:
       - name: Validate Watch Face Format
         run: java -jar tools/wff-validator.jar 2 watchface/src/main/res/raw/watchface.xml
 
-      - name: Build debug APK
-        run: ./gradlew :watchface:assembleDebug
+      - name: Verify debug and release builds
+        run: ./gradlew --no-daemon :watchface:lintDebug :watchface:lintRelease :watchface:assembleDebug :watchface:assembleRelease
 
       - name: Upload debug APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: fuzzy-time-gb-debug-apk
           path: watchface/build/outputs/apk/debug/watchface-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+      - name: Summarize verification
+        if: always()
+        run: python3 .github/scripts/verification-summary.py
+      - name: Upload test and lint reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: verification-reports-${{ github.sha }}
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+            **/build/reports/lint-results*
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Upload release build APKs
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-build-apks-${{ github.sha }}
+          path: '**/build/outputs/apk/**/release/*.apk'
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    name: Draft development APK release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          pattern: '*debug*'
+          path: artifacts
+      - name: Prepare labelled APKs and checksums
+        run: |
+          mkdir release-apks
+          python3 - <<'SCRIPT'
+          from pathlib import Path
+          import shutil
+          for apk in Path('artifacts').rglob('*.apk'):
+              name = '-'.join(apk.relative_to('artifacts').parts)
+              shutil.copy2(apk, Path('release-apks') / name)
+          if not list(Path('release-apks').glob('*.apk')):
+              raise SystemExit('No debug APKs were downloaded')
+          SCRIPT
+          cd release-apks
+          sha256sum *.apk > SHA256SUMS
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$RELEASE_TAG" release-apks/* --verify-tag --draft \
+            --title "$RELEASE_TAG development APKs" \
+            --notes "Verified debug APKs for installation and testing. Signed with a disposable CI debug key; updates from other builds may require reinstalling. Production-signed distribution requires the app's release keystore and versioning procedure. SHA256SUMS is attached."
