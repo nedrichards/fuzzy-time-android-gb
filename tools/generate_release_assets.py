@@ -1,73 +1,30 @@
 #!/usr/bin/env python3
+"""Derive picker/store images from committed, device-rendered screenshots."""
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
-
+from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
-WATCHFACE_PREVIEW = ROOT / "watchface/src/main/res/drawable/preview.png"
-RELEASE_ASSETS = ROOT / "release-assets"
-SCREENSHOTS = RELEASE_ASSETS / "screenshots"
-
-TEXT = "#F2F2EA"
-TRACK = "#33332F"
-GREEN = "#CFE8D6"
-BLACK = "#000000"
-FONT_REGULAR = ROOT / "release-assets/fonts/liberation_sans_regular.ttf"
-FONT_BOLD = ROOT / "release-assets/fonts/liberation_sans_bold.ttf"
+SCREENSHOTS = ROOT / 'release-assets/screenshots'
 
 
-def font(path: Path, size: int) -> ImageFont.FreeTypeFont:
-    return ImageFont.truetype(path, size=size)
+def main():
+    # Screenshots are captured sources, never redrawn with substitute fonts.
+    with Image.open(SCREENSHOTS / 'default.png') as source:
+        assert source.width == source.height, 'Use a square watch-face capture'
+        face = source.convert('RGB')
+    face.resize((450, 450), Image.Resampling.LANCZOS).save(
+        ROOT / 'watchface/src/main/res/drawable/preview.png')
+    # The actual circular face fills the icon; no branding or device frame.
+    icon = face.resize((512, 512), Image.Resampling.LANCZOS).convert('RGBA')
+    mask = Image.new('L', (512, 512))
+    ImageDraw.Draw(mask).ellipse((0, 0, 511, 511), fill=255)
+    icon.putalpha(mask)
+    icon.save(ROOT / 'release-assets/icon-512.png')
+    for name in ('range-complication.png', 'arvo.png'):
+        with Image.open(SCREENSHOTS / name) as source:
+            assert source.width == source.height
 
 
-def draw_centered(draw: ImageDraw.ImageDraw, text: str, y: int, font_obj: ImageFont.FreeTypeFont, fill: str) -> None:
-    bbox = draw.textbbox((0, 0), text, font=font_obj)
-    width = bbox[2] - bbox[0]
-    draw.text(((450 - width) / 2, y), text, font=font_obj, fill=fill)
-
-
-def draw_arc(draw: ImageDraw.ImageDraw, fill: str, progress: float | None = None) -> None:
-    bbox = (10, 10, 440, 440)
-    draw.arc(bbox, start=200, end=340, fill=TRACK, width=4)
-    if progress is not None:
-        end = 200 + (140 * max(0.0, min(progress, 1.0)))
-        draw.arc(bbox, start=200, end=end, fill=fill, width=5)
-
-
-def watchface_image(progress: float | None = None, text_fill: str = TEXT) -> Image.Image:
-    image = Image.new("RGB", (450, 450), BLACK)
-    draw = ImageDraw.Draw(image)
-    draw_arc(draw, text_fill, progress)
-    draw_centered(draw, "Twenty-five Past", 160, font(FONT_REGULAR, 42), text_fill)
-    draw_centered(draw, "Twelve", 222, font(FONT_BOLD, 56), text_fill)
-    return image
-
-
-def store_icon() -> Image.Image:
-    image = Image.new("RGB", (512, 512), BLACK)
-    draw = ImageDraw.Draw(image)
-    draw.ellipse((20, 20, 492, 492), outline=TEXT, width=3)
-    draw.arc((42, 42, 470, 470), start=200, end=292, fill=GREEN, width=8)
-    title = font(FONT_BOLD, 58)
-    small = font(FONT_REGULAR, 30)
-    for text, y, font_obj in [("Fuzzy", 184, title), ("Time GB", 248, small)]:
-        bbox = draw.textbbox((0, 0), text, font=font_obj)
-        draw.text(((512 - (bbox[2] - bbox[0])) / 2, y), text, font=font_obj, fill=TEXT)
-    return image
-
-
-def main() -> None:
-    WATCHFACE_PREVIEW.parent.mkdir(parents=True, exist_ok=True)
-    SCREENSHOTS.mkdir(parents=True, exist_ok=True)
-
-    default = watchface_image(progress=None)
-    default.save(WATCHFACE_PREVIEW)
-    default.save(SCREENSHOTS / "default.png")
-
-    watchface_image(progress=0.66, text_fill=GREEN).save(SCREENSHOTS / "range-complication.png")
-    store_icon().save(RELEASE_ASSETS / "icon-512.png")
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

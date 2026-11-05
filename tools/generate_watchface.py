@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+from xml.sax.saxutils import escape
 
 
 OUT = Path("watchface/src/main/res/raw/watchface.xml")
@@ -22,14 +23,14 @@ def render_range_complication(
     return [
         f'{indent}<ComplicationSlot slotId="{slot_id}" displayName="{display_name}" supportedTypes="RANGED_VALUE GOAL_PROGRESS WEIGHTED_ELEMENTS EMPTY" x="0" y="0" width="450" height="450">',
         f'{indent}    <Variant mode="AMBIENT" target="alpha" value="0" />',
-        f'{indent}    <BoundingArc centerX="225" centerY="225" width="430" height="430" thickness="8" startAngle="{start_angle}" endAngle="{end_angle}" isRoundEdge="TRUE" outlinePadding="8" />',
+        f'{indent}    <BoundingArc centerX="225" centerY="225" width="450" height="450" thickness="112.5" startAngle="{start_angle}" endAngle="{end_angle}" isRoundEdge="TRUE" outlinePadding="0" />',
         f'{indent}    <Complication type="RANGED_VALUE">',
         f'{indent}        <PartDraw x="0" y="0" width="450" height="450">',
         f'{indent}            <Arc centerX="225" centerY="225" width="430" height="430" startAngle="{start_angle}" endAngle="{end_angle}">',
         f'{indent}                <Stroke color="#22F2F2EA" thickness="4" cap="ROUND" />',
         f'{indent}            </Arc>',
         f'{indent}            <Arc centerX="225" centerY="225" width="430" height="430" startAngle="{start_angle}" endAngle="{start_angle}">',
-        f'{indent}                <Transform target="endAngle" value="{start_angle} + (([COMPLICATION.RANGED_VALUE_VALUE] - [COMPLICATION.RANGED_VALUE_MIN]) / ([COMPLICATION.RANGED_VALUE_MAX] - [COMPLICATION.RANGED_VALUE_MIN]) * {sweep})" />',
+        f'{indent}                <Transform target="endAngle" value="{start_angle} + (([COMPLICATION.RANGED_VALUE_MAX] &gt; [COMPLICATION.RANGED_VALUE_MIN] ? clamp(([COMPLICATION.RANGED_VALUE_VALUE] - [COMPLICATION.RANGED_VALUE_MIN]) / ([COMPLICATION.RANGED_VALUE_MAX] - [COMPLICATION.RANGED_VALUE_MIN]), 0, 1) : 0) * {sweep})" />',
         f'{indent}                <Stroke color="[CONFIGURATION.textShade]" thickness="5" cap="ROUND" />',
         f'{indent}            </Arc>',
         f'{indent}        </PartDraw>',
@@ -40,7 +41,7 @@ def render_range_complication(
         f'{indent}                <Stroke color="#22F2F2EA" thickness="4" cap="ROUND" />',
         f'{indent}            </Arc>',
         f'{indent}            <Arc centerX="225" centerY="225" width="430" height="430" startAngle="{start_angle}" endAngle="{start_angle}">',
-        f'{indent}                <Transform target="endAngle" value="{start_angle} + min(([COMPLICATION.GOAL_PROGRESS_VALUE] / [COMPLICATION.GOAL_PROGRESS_TARGET_VALUE]) * {sweep}, {sweep})" />',
+        f'{indent}                <Transform target="endAngle" value="{start_angle} + (([COMPLICATION.GOAL_PROGRESS_TARGET_VALUE] &gt; 0 ? clamp([COMPLICATION.GOAL_PROGRESS_VALUE] / [COMPLICATION.GOAL_PROGRESS_TARGET_VALUE], 0, 1) : 0) * {sweep})" />',
         f'{indent}                <Stroke color="[CONFIGURATION.textShade]" thickness="5" cap="ROUND" />',
         f'{indent}            </Arc>',
         f'{indent}        </PartDraw>',
@@ -203,6 +204,12 @@ def render_text_parts(
     return rendered
 
 
+def font_expression(option_id: str) -> str:
+    # Unknown saved values fall back to the system font, without duplicate layouts.
+    operator = "!=" if option_id == "system" else "=="
+    return f'[CONFIGURATION.fontStyle] {operator} "arvo"'
+
+
 def main() -> None:
     cases = []
     for hour in range(24):
@@ -229,25 +236,16 @@ def main() -> None:
         '    </UserConfigurations>',
         '',
         '    <Scene backgroundColor="#FF000000">',
-        *render_range_complication("        ", 0, "top_range_complication_label", -70, 70),
-        *render_range_complication("        ", 1, "bottom_range_complication_label", 110, 250),
         '        <Condition>',
         '            <Expressions>',
     ]
 
     for index, (hour, start, end, _) in enumerate(cases):
-        lines.extend(
-            [
-                f'                <Expression name="case_{index:03d}">',
-                f'                    <![CDATA[{expression_for(hour, start, end)}]]>',
-                '                </Expression>',
-            ]
-        )
         for option_id, _ in FONT_OPTIONS:
             lines.extend(
                 [
                     f'                <Expression name="case_{index:03d}_{option_id}">',
-                    f'                    <![CDATA[{expression_for(hour, start, end)} && [CONFIGURATION.fontStyle] == "{option_id}"]]>',
+                    f'                    <![CDATA[{expression_for(hour, start, end)} && {font_expression(option_id)}]]>',
                     '                </Expression>',
                 ]
             )
@@ -263,23 +261,15 @@ def main() -> None:
             lines.append(f'            <Compare expression="case_{index:03d}_{option_id}">')
             lines.append('                <Group name="interactive_time" x="0" y="0" width="450" height="450">')
             lines.append('                    <Variant mode="AMBIENT" target="alpha" value="0" />')
+            lines.append(f'                    <ScreenReader stringId="spoken_time_{index:03d}" />')
             lines.extend(render_text_parts(text_lines, "                    ", font_family, INTERACTIVE_COLOR))
             lines.append('                </Group>')
             lines.append('                <Group name="ambient_time" x="0" y="0" width="450" height="450" alpha="0">')
             lines.append('                    <Variant mode="AMBIENT" target="alpha" value="255" />')
+            lines.append(f'                    <ScreenReader stringId="spoken_time_{index:03d}" />')
             lines.extend(render_text_parts(text_lines, "                    ", font_family, AMBIENT_COLOR, ambient=True))
             lines.append('                </Group>')
             lines.append('            </Compare>')
-        lines.append(f'            <Compare expression="case_{index:03d}">')
-        lines.append('                <Group name="interactive_time" x="0" y="0" width="450" height="450">')
-        lines.append('                    <Variant mode="AMBIENT" target="alpha" value="0" />')
-        lines.extend(render_text_parts(text_lines, "                    ", "SYNC_TO_DEVICE", INTERACTIVE_COLOR))
-        lines.append('                </Group>')
-        lines.append('                <Group name="ambient_time" x="0" y="0" width="450" height="450" alpha="0">')
-        lines.append('                    <Variant mode="AMBIENT" target="alpha" value="255" />')
-        lines.extend(render_text_parts(text_lines, "                    ", "SYNC_TO_DEVICE", AMBIENT_COLOR, ambient=True))
-        lines.append('                </Group>')
-        lines.append('            </Compare>')
 
     lines.extend(
         [
@@ -291,12 +281,23 @@ def main() -> None:
         [
             '            </Default>',
             '        </Condition>',
+            *render_range_complication("        ", 0, "top_range_complication_label", -70, 70),
+            *render_range_complication("        ", 1, "bottom_range_complication_label", 110, 250),
             '    </Scene>',
             '</WatchFace>',
             '',
         ]
     )
 
+    strings = ['<?xml version="1.0" encoding="utf-8"?>', '<resources>']
+    for index, (_, _, _, text_lines) in enumerate(cases):
+        spoken = " ".join(text_lines)
+        if spoken.startswith("Half "):
+            spoken = spoken.replace("Half ", "Half past ", 1)
+        spoken = escape(spoken).replace("'", "\\'")
+        strings.append(f'    <string name="spoken_time_{index:03d}">{spoken}</string>')
+    strings.append('</resources>')
+    (OUT.parents[1] / 'values' / 'spoken_times.xml').write_text("\n".join(strings) + "\n", encoding="utf-8")
     OUT.write_text("\n".join(lines), encoding="utf-8")
 
 

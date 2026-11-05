@@ -7,3 +7,5 @@ __pycache__/
 build/
 */build/
 local.properties
+# Generated device-test overrides; never include in developer or Play releases.
+/watchface/src/developer/res/raw/

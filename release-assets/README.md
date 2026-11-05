@@ -1,24 +1,19 @@
-# Release Assets
+# Release assets
 
-Generated assets for store and release prep.
+`screenshots/default.png`, `screenshots/range-complication.png` and
+`screenshots/arvo.png` are Wear OS emulator captures of the actual WFF renderer,
+using fixed time and sample complication values through the developer-only
+fixture. The default uses the system font; Arvo shows the bundled alternative.
+There are no device frames, branding overlays or personal health data.
 
-Run:
+Capture replacements with `android screen capture --device <serial> -o <path>`
+after activating the developer fixture. Inspect the images for system overlays
+before committing them. Clear the fixture and rebuild after capturing.
 
-```sh
-python3 tools/generate_release_assets.py
-```
+Run `python3 tools/generate_release_assets.py` to derive the picker preview and
+512px store icon from `screenshots/default.png`. The generator does not redraw
+the face or synthesize screenshots. The icon uses only the face experience,
+without extra text, and scales the circular face to the asset edges.
 
-Generated files:
-
-- `watchface/src/main/res/drawable/preview.png`: watch face picker preview.
-- `release-assets/screenshots/default.png`: default austere word face.
-- `release-assets/screenshots/range-complication.png`: sample range arc.
-- `release-assets/icon-512.png`: square release icon draft.
-
-The generator uses vendored Liberation Sans font files in `release-assets/fonts`
-so CI and local output stay byte-for-byte consistent. Liberation Fonts are
-licensed under the SIL Open Font License 1.1; see
-`../licenses/LiberationFonts-OFL-1.1.txt`.
-
-These are draft assets for packaging and store listing work, not final marketing
-copy or screenshots captured from a physical device.
+The older vendored Liberation Sans fonts and their OFL license remain available
+for the portable layout/ambient checker; they are not used to draw screenshots.
