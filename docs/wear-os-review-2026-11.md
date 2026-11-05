@@ -92,3 +92,22 @@ Gradle 9.8.2 / AGP 9.5.0 combination passed `lintDebug`, `lintRelease`,
 watch, emulator, TalkBack session, memory evaluation or battery benchmark was
 run for this review. The recommendations above are pending work, not implemented
 runtime changes or certification of Play compliance.
+
+## Build dependency security follow-up
+
+After the integrated dependency graph was submitted successfully, GitHub still
+reported four open advisories: Guava (high, alert 52), Bouncy Castle (critical
+and high, alerts 50/51), and Kotlin Gradle plugin (medium, alert 46). The refreshed
+SBOM traces these to AGP 9.5.0 and its tooling: Guava 33.4.0-jre, Bouncy Castle
+1.80.2 and Kotlin Gradle plugin 2.2.10. GitHub lists fixes at Guava 33.7.2,
+Bouncy Castle 1.85 and Kotlin 2.4.20-Beta1 respectively. Track upstream AGP fixes
+or evaluate compatible build-classpath constraints separately; do not force a
+Kotlin beta into this resource-only project solely to silence an alert.
+These are build-environment dependencies, not libraries shipped on the watch.
+
+The locally assembled release APK was also inspected: it contains no DEX or
+native-library entries. The debug APK includes generated R classes and toolchain
+stubs, so use the release artifact when checking resource-only distribution.
+
+Source: [repository dependency alerts](https://github.com/nedrichards/fuzzy-time-android-gb/security/dependabot),
+with versions and parents checked against the refreshed GitHub dependency SBOM.
