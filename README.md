@@ -79,3 +79,5 @@ python3 tools/validate_wff.py
 
 ---
 *Co-authored with a bunch of different AIs*
+
+For hosted checks and artifacts, see [continuous integration](docs/CI.md).
